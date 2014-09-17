@@ -5,7 +5,7 @@ command line to get server metadata
 
 Very simple command line to make use of server metadata, especially thinking on powershell.
 
-QvQms usage: QvQms `<options`>
+QvQms usage: QvQms `<options>`
 
     -h shows usage
     
