@@ -1,0 +1,5 @@
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QmsTeste.exe.config
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QmsTeste.exe
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QmsTeste.pdb
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\obj\x86\Debug\QmsTeste.exe
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\obj\x86\Debug\QmsTeste.pdb

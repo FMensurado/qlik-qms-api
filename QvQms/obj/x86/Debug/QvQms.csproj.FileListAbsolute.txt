@@ -1,0 +1,8 @@
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QvQms.exe.config
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QvQms.exe
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\bin\Debug\QvQms.pdb
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\obj\x86\Debug\QvQms.exe
+D:\Projectos\BI\QlikView\qms\QmsTeste\QmsTeste\obj\x86\Debug\QvQms.pdb
+D:\Projectos\BI\QlikView\qms\QvQms\QvQms\bin\Debug\QvQms.exe.config
+D:\Projectos\BI\QlikView\qms\QvQms\QvQms\obj\x86\Debug\QvQms.exe
+D:\Projectos\BI\QlikView\qms\QvQms\QvQms\obj\x86\Debug\QvQms.pdb
