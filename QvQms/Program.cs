@@ -88,6 +88,7 @@ namespace QvQms
             Console.WriteLine("  documents");
             Console.WriteLine("    -da list all user documents");
             Console.WriteLine("    -du list all user documents access entries");
+            Console.WriteLine("    -d-add-access <doc> <username|groupname> adds user or group to doc authorization list");
         }
 
         static void Main(string[] args)
@@ -119,9 +120,9 @@ namespace QvQms
                 // QVS services
                 List<ServiceInfo> qvs = apiClient.GetServices(ServiceTypes.QlikViewServer);
                 // QDS services
-                List<ServiceInfo> qds = apiClient.GetServices(ServiceTypes.QlikViewDistributionService);
+                List<ServiceInfo> qms = apiClient.GetServices(ServiceTypes.QlikViewManagementService);
 
-                if (qds.Count == 0)
+                if (qms.Count == 0)
                     throw new ApplicationException("Could not retrieve QDS ID.");
 
                 if (qvs.Count == 0)
@@ -130,7 +131,7 @@ namespace QvQms
                 switch (args[0])
                 {
                     case "-ta":
-                        List<TaskInfo> tasks = apiClient.GetTasks(qds[0].ID);
+                        List<TaskInfo> tasks = apiClient.GetTasks(qms[0].ID);
 
                         WriteTaskHeader();
                         foreach (TaskInfo ti in tasks) WriteTaskInfo(ti);
@@ -138,7 +139,7 @@ namespace QvQms
                     case "-tf":
                         if (args.Length >= 2)
                         {
-                            TaskInfo ti = apiClient.FindTask(qds[0].ID, TaskType.Undefined, args[1]);
+                            TaskInfo ti = apiClient.FindTask(qms[0].ID, TaskType.Undefined, args[1]);
                             WriteTaskHeader();
                             WriteTaskInfo(ti);
                         }
@@ -161,8 +162,13 @@ namespace QvQms
                     case "-du":
                         OutputUserDocumentsAccessEntries(qvs[0].ID);
                         break;
+                    case "-d-add-access":
+                        AddAuthorization(qvs[0].ID, args[1], args[2]);
+                        break;
+                    case "-d-remove-access":
+                        RemoveAuthorization(qvs[0].ID, args[1], args[2]);
+                        break;
                 }
-
 
 
                 //if (qvsServices.Count > 0)
@@ -182,6 +188,40 @@ namespace QvQms
             //}
             // wait for user to press any key
             //Console.ReadLine();
+        }
+
+        private static void RemoveAuthorization(Guid qvsId, string doc, string name)
+        {
+            DocumentNode docNode = FindDoc(qvsId, doc);
+            DocumentMetaData dm = apiClient.GetDocumentMetaData(docNode, DocumentMetaDataScope.Authorization);
+            DocumentAccessEntry dae = dm.Authorization.Access.Find(e => e.UserName == name);
+            dm.Authorization.Access.Remove(dae);
+            apiClient.SaveDocumentMetaData(dm);
+        }
+
+        private static void AddAuthorization(Guid qvsId,  string doc, string name)
+        {
+            DocumentNode docNode = FindDoc(qvsId, doc);
+            DocumentMetaData dm = apiClient.GetDocumentMetaData(docNode, DocumentMetaDataScope.Authorization);
+            dm.Authorization.Access.Add(GetNewDocumentAcessEntry(name));
+            apiClient.SaveDocumentMetaData(dm);
+        }
+
+        private static DocumentNode FindDoc(Guid qvsId, string doc)
+        {
+            List<DocumentNode> docs = apiClient.GetUserDocuments(qvsId);
+            DocumentNode docNode = docs.Find(dn => dn.Name == doc);
+            return docNode;
+        }
+
+        private static DocumentAccessEntry GetNewDocumentAcessEntry(string name)
+        {
+            DocumentAccessEntry dae = new DocumentAccessEntry();
+            dae.AccessMode = DocumentAccessEntryMode.Always;
+            dae.UserName = name;
+            dae.IsAnonymous = false;
+            dae.DayOfWeekConstraints = new List<DayOfWeek>();
+            return dae;
         }
 
         private static void OutputUserDocuments(Guid qvsId)
@@ -205,14 +245,34 @@ namespace QvQms
 
         private static void WriteTaskInfo(TaskInfo ti)
         {
-            Console.WriteLine(ti.Name + "\t" +
-                apiClient.GetTaskStatus(ti.ID, TaskStatusScope.All).General.Status.ToString() + "\t" +
-                ti.Enabled.ToString() + "\t" + ti.ID.ToString());
+            DocumentTask dt = apiClient.GetDocumentTask(ti.ID, DocumentTaskScope.Triggering);
+            
+            string startAt = "";
+            string hourly = "", daily = "", weekly = "", monthly = "";
+            foreach (Trigger t in dt.Triggering.Triggers)
+            {
+                try
+                {
+                    startAt = ((RecurrenceTrigger)t).StartAt.ToString("HH:mm:ss");
+                    hourly = ((RecurrenceTrigger)t).Hourly != null ? ((RecurrenceTrigger)t).Hourly.RecurEvery.ToString() : "N/A";
+                    daily = ((RecurrenceTrigger)t).Daily != null ? ((RecurrenceTrigger)t).Daily.RecurEvery.ToString() : "N/A";
+                    weekly = ((RecurrenceTrigger)t).Weekly != null ? ((RecurrenceTrigger)t).Weekly.RecurEvery.ToString() : "N/A";
+                    //monthly = ((RecurrenceTrigger)t).Monthly.DayConstraints.ToString();
+                }
+                catch (System.Exception)
+                {
+                }
+
+                Console.WriteLine(ti.Name + "\t" +
+                    apiClient.GetTaskStatus(ti.ID, TaskStatusScope.All).General.Status.ToString() + "\t" +
+                    ti.Enabled.ToString() + "\t" + ti.ID.ToString() + "\t" + startAt + "\t" + hourly
+                        + "\t" + daily + "\t" + weekly);
+            }
         }
 
         private static void WriteTaskHeader()
         {
-            Console.WriteLine("Name\tStatus\tEnabled\tID");
+            Console.WriteLine("Name\tStatus\tEnabled\tID\tStartAt\thourly\tdaily\tweekly");
         }
 
         private static void WriteDocumentHeader()
