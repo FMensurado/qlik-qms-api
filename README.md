@@ -17,5 +17,7 @@ QvQms usage: QvQms `<options>`
     documents
         -da list all user documents
         -du list all user documents access entries
+        -d-add-access <doc> <username|groupname> adds user or group to doc authorization list
+        -d-remove-access <doc> <username|groupname> adds user or group to doc authorization list
         
 The idea is to increase options as needed
